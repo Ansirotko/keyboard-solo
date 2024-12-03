@@ -9,30 +9,44 @@ let currentLetter = 0;
 let totalCorrect = 0;
 let totalWrong = 0;
 let currentMistakes = 0;
-let letterCondition = [];
 let timer;
-let totalSeconds = 30;
-
+let totalSeconds = 0;
 
 function getRandom() {
     return words[Math.floor(Math.random() * words.length)];
 }
 
-function displayWord() {
-    currentWord = getRandom();
-    container.innerHTML = '';
-    letterCondition = [];
+function makeElement() {
     for (let letter of currentWord) {
         const span = document.createElement('span');
         span.textContent = letter;
         container.appendChild(span);
-        letterCondition.push('');
     }
+}
+
+function checkGameOver() {
+    if (totalCorrect === 5) {
+        alert(`Ура! Вы выиграли! Ваше время: ${totalSeconds} секунд`);
+        restartGame();
+        return;
+    } else {
+        if (totalWrong >= 5) {
+            alert(`Вы проиграли! Игра завершена! Ваше время: ${totalSeconds} секунд`);
+            restartGame();
+            return;
+        }
+    }
+}
+
+function displayWord() {
+    checkGameOver();
+    currentWord = getRandom();
+    container.innerHTML = '';
+    makeElement(currentWord);
     currentLetter = 0;
     currentMistakes = 0;
     updateMistakes();
 }
-
 
 function startGame() {
     displayWord();
@@ -42,7 +56,7 @@ function startGame() {
 
 function startTimer() {
     timer = setInterval(() => {
-        totalSeconds--;
+        totalSeconds++;
         updateTimer(totalSeconds);
         if (totalSeconds <= 0) {
             clearInterval(timer);
@@ -64,49 +78,38 @@ function pressKey(event) {
         const spans = container.querySelectorAll('span');
         spans[currentLetter].classList.add('c');
         spans[currentLetter].classList.remove('w');
-        letterCondition[currentLetter] = 'correct';
-        currentLetter++;
 
-        if (currentLetter === currentWord.length) {
-            totalCorrect++;
-            rightAnswer.textContent = totalCorrect;
-            if (totalCorrect === 5) {
-                alert('Ура! Вы выиграли!');
-                restartGame();
-                return;
-            }
-            displayWord();
-        }
+        currentLetter++;
     } else {
         const spans = container.querySelectorAll('span');
         spans[currentLetter].classList.add('w');
-        letterCondition[currentLetter] = 'wrong';
+
         currentMistakes++;
         updateMistakes();
         totalWrong++;
         wrongAnswer.textContent = totalWrong;
 
-        if (totalWrong === 5) {
-            alert('Вы проиграли! Игра завершена!');
-            restartGame();
-            return;
-        }
     }
-}
+    if (currentLetter === currentWord.length) {
+        totalCorrect++;
+        rightAnswer.textContent = totalCorrect;
+        setTimeout(displayWord, 0);
+    }
 
+
+}
 
 function updateMistakes() {
     mistakes.textContent = currentMistakes;
 }
 
-
 function restartGame() {
     updateTimer(totalSeconds);
     clearInterval(timer);
+    totalSeconds = 0
     totalCorrect = 0;
     totalWrong = 0;
     currentMistakes = 0;
-    totalSeconds = 30;
     startGame();
 }
 
